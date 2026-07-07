@@ -1,45 +1,42 @@
-# SimpleKafka: Building Your Own Kafka-like System From Scratch
+# SimpleKafka
 
-If you're looking to truly understand Kafka's architecture by implementing a simplified version yourself, you've come to the right place. Rather than just copying code, we'll build SimpleKafka incrementally, understanding each component as we go. This approach will give you a deep understanding of distributed messaging systems.
+A custom, simplified implementation of a distributed messaging system inspired by Apache Kafka. This project is built from scratch to understand the internal mechanics of a distributed message broker, including topic partitioning, leader election, and message persistence.
 
-## Workflow Summary
+## Features
 
-This incremental staged approach allows you to build and understand each component of a Kafka-like system:
+- **Topic Partitioning & Replication**: Topics are divided into partitions and distributed across multiple brokers.
+- **Leader & Follower Mechanics**: Zookeeper is used to elect a cluster controller, manage leader elections, and handle broker failures.
+- **Message Persistence**: Custom sequential log segment structure for persistent message storage.
+- **Client-Broker Protocol**: Custom binary protocol for produce, fetch, metadata, and replication requests.
+- **Producer & Consumer APIs**: Basic client libraries to interact with the cluster.
 
-1. Set up the project structure
-2. Create the core protocol layer
-3. Implementing Zookeeper Integration
-4. Building the storage layer
-5. Build the broker
-6. Develop the client library
-7. Building higher level producer and consumer APIs
-8. Test the system
+## Requirements
 
-By building each component yourself, you'll gain a deep understanding of Kafka's architecture and the design decisions behind it. This knowledge will be invaluable when working with the real Kafka or designing your own distributed systems.
+- Java 11 or higher
+- Maven
+- Apache ZooKeeper (tested with 3.8.1)
 
-## Testing the System
+## Building the Project
 
-### 1. Compile the project using Maven:
+Compile the project and package it into a single shaded JAR using Maven:
+
 ```bash
 mvn clean package
 ```
 
-### 2. Start ZooKeeper
+## Running the System
+
+### 1. Start ZooKeeper
+Ensure ZooKeeper is running locally on the default port `2181`:
+
 ```bash
-# Start ZooKeeper with default configuration
+# If ZooKeeper is in your PATH
 zkServer start
-
-# If that doesn't work, try:
-zookeeper-server-start /usr/local/etc/kafka/zookeeper.properties
-
-# Or create a simple config file:
-echo "tickTime=2000" > zk.cfg
-echo "dataDir=/tmp/zookeeper" >> zk.cfg
-echo "clientPort=2181" >> zk.cfg
-zookeeper-server-start zk.cfg
 ```
 
-### 3. Start Multiple Broker Instances
+### 2. Start Brokers
+Start multiple instances of `SimpleKafkaBroker`. Each requires a unique broker ID, host, port, and the ZooKeeper connection string.
+
 ```bash
 # Terminal 1 - Broker 1
 java -cp target/simple-kafka-1.0-SNAPSHOT.jar com.simplekafka.broker.SimpleKafkaBroker 1 localhost 9091 2181
@@ -51,38 +48,16 @@ java -cp target/simple-kafka-1.0-SNAPSHOT.jar com.simplekafka.broker.SimpleKafka
 java -cp target/simple-kafka-1.0-SNAPSHOT.jar com.simplekafka.broker.SimpleKafkaBroker 3 localhost 9093 2181
 ```
 
-### 4. Produce Messages
+### 3. Produce Messages
+Run the producer to create a topic (`test-topic`) and send test messages to the cluster:
+
 ```bash
 java -cp target/simple-kafka-1.0-SNAPSHOT.jar com.simplekafka.client.SimpleKafkaProducer localhost 9091 test-topic
 ```
 
-### 5. Consume Messages
+### 4. Consume Messages
+Run the consumer to read messages from a specific partition (e.g., partition `0`) of the topic:
+
 ```bash
 java -cp target/simple-kafka-1.0-SNAPSHOT.jar com.simplekafka.client.SimpleKafkaConsumer localhost 9091 test-topic 0
 ```
-
-## Key Concepts to Focus On During Testing
-
-1. **Topic Partitioning and Replication**
-   Watch how a topic gets divided into partitions and how those partitions are distributed across brokers.
-
-2. **Leader and Follower Mechanics**
-   - How one broker becomes the leader
-   - How followers replicate data from the leader
-   - What happens when a leader fails and a new leader is elected
-
-3. **The Controller Role**
-   - The controller is elected through ZooKeeper
-   - It manages partition assignments
-   - It handles broker failures
-   - A new controller is elected if the current one fails
-
-4. **Message Persistence**
-   - The log segment structure
-   - How messages are appended sequentially
-   - How indices map offsets to file positions
-
-5. **Client-Broker Protocol**
-   - The binary protocol format
-   - Request/response patterns
-   - How clients discover and connect to the right brokers
