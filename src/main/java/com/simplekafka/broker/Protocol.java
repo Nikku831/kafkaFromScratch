@@ -37,7 +37,6 @@ public class Protocol {
         buffer.putShort((short) errorMessage.length());
         buffer.put(errorMessage.getBytes());
         buffer.flip();
-<<<<<<< HEAD
         writeFully(channel, buffer);
     }
 
@@ -62,9 +61,6 @@ public class Protocol {
             totalRead += read;
         }
         return totalRead;
-=======
-        channel.write(buffer);
->>>>>>> 9cfeeeca6f4ab5a5591a518e77b5eeb7229759f2
     }
     
     /**
